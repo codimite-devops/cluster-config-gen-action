@@ -10,4 +10,4 @@ jobs:
       - id: foo
         uses: codimite-devops/cluster-config-gen-action/make@main
         with:
-          target: pr
+          target: echo

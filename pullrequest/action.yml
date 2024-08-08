@@ -1,5 +1,5 @@
-name: 'Hello World'
-description: 'Greet someone'
+name: 'Pull Request'
+description: 'cluster pull request'
 inputs:
   who-to-greet:  # id of input
     description: 'Who to greet'
@@ -29,7 +29,7 @@ runs:
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
 
-    - name: Run goodbye.sh
+    - name: Run ../scripts/goodbye.sh
       run: goodbye.sh
       shell: bash
 

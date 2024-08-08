@@ -41,10 +41,16 @@ runs:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
     - name: Run Makefile
       run: |
-        alias make='REPO=${{ inputs.repo }} COPY_SOURCE=${{ inputs.copy-source }} GENERATE_SCHEDULER=${{inputs.gitops-scheduler }} REPOSITORY_RESOLVE=${{ inputs.repository-resolve }} GITOPS_WEBHOOK_UPDATE=${{ inputs.gitops-webhook-update }} HELMFILE_USE_SELECTORS=${{ inputs.helmfile_use_selectors }} make -f ${{ github.action_path }}/Makefile.mk'
         make ${{ inputs.target }} 
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
+        MAKEFLAGS: '-f ${{ github.action_path }}/Makefile.mk'
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ inputs.repo }}
+        COPY_SOURCE: ${{ inputs.copy-source }}
+        GENERATE_SCHEDULER: ${{inputs.gitops-scheduler }}
+        REPOSITORY_RESOLVE: ${{ inputs.repository-resolve }}
+        GITOPS_WEBHOOK_UPDATE: ${{ inputs.gitops-webhook-update }}
+        HELMFILE_USE_SELECTORS: ${{ inputs.helmfile_use_selectors }}
 

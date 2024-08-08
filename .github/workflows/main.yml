@@ -11,3 +11,4 @@ jobs:
         uses: codimite-devops/cluster-config-gen-action/make@main
         with:
           target: echo
+          repo: "test-repo"

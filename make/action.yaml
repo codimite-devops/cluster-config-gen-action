@@ -41,7 +41,7 @@ runs:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
     - name: Run Makefile
       run: |
-        make ${{ inputs.target }} 
+        make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:

@@ -41,11 +41,11 @@ runs:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
     - name: Run Makefile
       run: |
-        make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
+        make ${{ inputs.target }} 
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
-        MAKEFLAGS: '-f ${{ github.action_path }}/Makefile.mk'
+        INCLUDE_DIRS: '-f ${{ github.action_path }}'
         GITHUB_TOKEN: ${{ inputs.github-token }}
         REPO: ${{ inputs.repo }}
         COPY_SOURCE: ${{ inputs.copy-source }}

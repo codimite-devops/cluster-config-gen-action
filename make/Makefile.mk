@@ -170,9 +170,9 @@ post-build: $(GENERATE_SCHEDULER)
 # lets add the kubectl-apply prune annotations
 #
 # NOTE be very careful about these 3 labels as getting them wrong can remove stuff in you cluster!
-	jx gitops label --dir $(OUTPUT_DIR)/cluster                   gitops.jenkins-x.io/pipeline=example-project-cluster-configurations-cluster
-	jx gitops label --dir $(OUTPUT_DIR)/customresourcedefinitions gitops.jenkins-x.io/pipeline=example-project-cluster-configurations-crd
-	jx gitops label --dir $(OUTPUT_DIR)/namespaces                gitops.jenkins-x.io/pipeline=example-project-cluster-configurations-ns
+	jx gitops label --dir $(OUTPUT_DIR)/cluster                   gitops.jenkins-x.io/pipeline=$(REPO)-cluster
+	jx gitops label --dir $(OUTPUT_DIR)/customresourcedefinitions gitops.jenkins-x.io/pipeline=$(REPO)-crd
+	jx gitops label --dir $(OUTPUT_DIR)/namespaces                gitops.jenkins-x.io/pipeline=$(REPO)-ns
 
 # lets add kapp friendly change group identifiers to nginx-ingress and pusher-wave so we can write rules against them
 	jx gitops annotate --dir $(OUTPUT_DIR) --selector app=pusher-wave kapp.k14s.io/change-group=apps.jenkins-x.io/pusher-wave

@@ -25,42 +25,6 @@ runs:
   steps: 
   - name: install
     uses: codimite-devops/cluster-config-gen-action/install@main
-  - name: export env
-    shell: bash
-    run: |
-      echo "PULL_BASE_REF=$PULL_BASE_REF" >> $GITHUB_ENV
-      echo "PULL_BASE_SHA=$PULL_BASE_SHA" >> $GITHUB_ENV
-      echo "PULL_NUMBER=$PULL_NUMBER" >> $GITHUB_ENV
-      echo "PULL_PULL_REF=$PULL_PULL_REF" >> $GITHUB_ENV
-      echo "PULL_PULL_SHA=$PULL_PULL_SHA" >> $GITHUB_ENV
-      echo "PULL_REFS=$PULL_REFS" >> $GITHUB_ENV
-      echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
-      echo "JOB_SPEC=$JOB_SPEC" >> $GITHUB_ENV
-      echo "JOB_TYPE=$JOB_TYPE" >> $GITHUB_ENV
-      echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-      echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
-      echo "REPO_URL=$REPO_URL" >> $GITHUB_ENV
-      echo "JX_KUBERNETES=$JX_KUBERNETES" >> $GITHUB_ENV
-      echo "SOURCE_DIR=$SOURCE_DIR" >> $GITHUB_ENV
-      echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_ENV
-      echo "GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-    env:
-      PULL_BASE_REF: ${{ github.base_ref }}
-      PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-      PULL_NUMBER: ${{ github.event.pull_request.number }}
-      PULL_PULL_REF: refs/pull/${{ github.event.pull_request.number }}/head
-      PULL_PULL_SHA: ${{ github.event.pull_request.head.sha }}
-      PULL_REFS: ${{ github.base_ref }}:${{ github.event.pull_request.base.sha }},${{ github.event.pull_request.number }}:${{ github.event.pull_request.head.sha }}:refs/pull/${{ github.event.pull_request.number }}/head
-      JOB_NAME: "verify"
-      JOB_SPEC: "type:presubmit"
-      JOB_TYPE: "presubmit"
-      REPO_NAME: ${{ github.event.repository.name }}
-      REPO_OWNER: ${{ github.repository_owner }}
-      REPO_URL: https://github.com/${{ github.repository }}.git
-      JX_KUBERNETES: true
-      SOURCE_DIR: "${{ github.workspace }}/source"
-      GIT_AUTHOR_NAME: "codimite-jxaction[bot]"
-      GIT_AUTHOR_EMAIL:  "167803634+codimite-jxaction[bot]@users.noreply.github.com"
   - run: |
       git config --global --add safe.directory '*'
     shell: bash

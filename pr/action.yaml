@@ -62,8 +62,8 @@ runs:
       GIT_AUTHOR_NAME: "codimite-jxaction[bot]"
       GIT_AUTHOR_EMAIL:  "167803634+codimite-jxaction[bot]@users.noreply.github.com"
   - run: |
-    shell: bash
       git config --global --add safe.directory '*'
+    shell: bash
   - name: git-branch
     working-directory: ${{ inputs.working-directory }}
     shell: bash

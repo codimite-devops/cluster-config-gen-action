@@ -1,0 +1,116 @@
+name: 'PR'
+description: 'Action to run PR pipeline'
+inputs:
+  target:
+    description: 'target to apply, pr or apply'
+    required: true
+    default: 'apply'
+  repo:
+    required: true
+    description: 'Name of the repository'
+  github-token:
+    required: true
+    description: 'Github Token'
+  working-directory:
+    required: true
+    description: Where to run the action
+    default: '.'
+  workload_identity_provider:
+    description: 'Workload Identity Provider to access artifactory'
+  service_account:
+    description: 'Workload Identity SA to access artifactory'
+
+runs:
+  using: "composite"
+  steps: 
+  - name: install
+    uses: codimite-devops/cluster-config-gen-action/install@main
+  - name: Set GitHub Path
+    run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+    shell: bash
+    env:
+      GITHUB_ACTION_PATH: ${{ github.action_path }}
+  - name: export env
+    shell: bash
+    run: |
+      echo "PULL_BASE_REF=$PULL_BASE_REF" >> $GITHUB_PATH
+      echo "PULL_BASE_SHA=$PULL_BASE_SHA" >> $GITHUB_PATH
+      echo "PULL_NUMBER=$PULL_NUMBER" >> $GITHUB_PATH
+      echo "PULL_PULL_REF=$PULL_PULL_REF" >> $GITHUB_PATH
+      echo "PULL_PULL_SHA=$PULL_PULL_SHA" >> $GITHUB_PATH
+      echo "PULL_REFS=$PULL_REFS" >> $GITHUB_PATH
+      echo "JOB_NAME=$JOB_NAME" >> $GITHUB_PATH
+      echo "JOB_SPEC=$JOB_SPEC" >> $GITHUB_PATH
+      echo "JOB_TYPE=$JOB_TYPE" >> $GITHUB_PATH
+      echo "REPO_NAME=$REPO_NAME" >> $GITHUB_PATH
+      echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_PATH
+      echo "REPO_URL=$REPO_URL" >> $GITHUB_PATH
+      echo "JX_KUBERNETES=$JX_KUBERNETES" >> $GITHUB_PATH
+      echo "SOURCE_DIR=$SOURCE_DIR" >> $GITHUB_PATH
+      echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_PATH
+      echo "GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL" >> $GITHUB_PATH
+    env:
+      PULL_BASE_REF: ${{ github.base_ref }}
+      PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      PULL_NUMBER: ${{ github.event.pull_request.number }}
+      PULL_PULL_REF: refs/pull/${{ github.event.pull_request.number }}/head
+      PULL_PULL_SHA: ${{ github.event.pull_request.head.sha }}
+      PULL_REFS: ${{ github.base_ref }}:${{ github.event.pull_request.base.sha }},${{ github.event.pull_request.number }}:${{ github.event.pull_request.head.sha }}:refs/pull/${{ github.event.pull_request.number }}/head
+      JOB_NAME: "verify"
+      JOB_SPEC: "type:presubmit"
+      JOB_TYPE: "presubmit"
+      REPO_NAME: ${{ github.event.repository.name }}
+      REPO_OWNER: ${{ github.repository_owner }}
+      REPO_URL: https://github.com/${{ github.repository }}.git
+      JX_KUBERNETES: true
+      SOURCE_DIR: "${{ github.workspace }}/source"
+      GIT_AUTHOR_NAME: "codimite-jxaction[bot]"
+      GIT_AUTHOR_EMAIL:  "167803634+codimite-jxaction[bot]@users.noreply.github.com"
+  - run: |
+    shell: bash
+      git config --global --add safe.directory '*'
+  - name: git-branch
+    working-directory: ${{ inputs.working-directory }}
+    shell: bash
+    run: |
+      export SUBDIR="$PWD"
+      echo "git working on: $REPO_URL version $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
+      git fetch origin $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
+      git checkout $(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
+      git reset --hard $PULL_PULL_SHA
+      echo "checked out revision: $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
+  - name: git-merge
+    working-directory: ${{ inputs.working-directory }}
+    shell: bash
+    run: |
+      counter=0
+      until [ "$counter" -eq 3 ]; do
+        # lets avoid git rebase/merge conflicts on promotions
+        jx gitops git merge --rebase --merge-arg "-Xtheirs" && exit 0
+        counter=$((counter+1))
+        git rebase --abort
+        if git log -1 --pretty=%B | grep -i regenerate; then
+          git reset --hard HEAD~1
+        fi
+      done
+      exit 1
+  - id: "auth"
+    name: "Authenticate to Google Cloud"
+    uses: "google-github-actions/auth@v2"
+    with:
+      token_format: "access_token"
+      workload_identity_provider: ${{ inputs.workload_identity_provider }}
+      service_account: ${{ inputs.service_account }}
+  - uses: "docker/login-action@v3"
+    with:
+      registry: "us-central1-docker.pkg.dev" # or
+      username: "oauth2accesstoken"
+      password: "${{ steps.auth.outputs.access_token }}"
+  - name: make-pr
+    uses: codimite-devops/cluster-config-gen-action/make@main
+    if: github.event_name == 'pull_request'
+    with:
+      target: pr
+      repo: ${{ github.event.repository.name }}
+      github-token: ${{ inputs.githuh-token }}
+      working-directory: "${{ github.workspace }}/source"

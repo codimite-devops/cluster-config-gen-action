@@ -1,0 +1,21 @@
+name: 'Make'
+description: 'Action to run Makefile commands'
+inputs:
+  target:
+    description: 'target to apply, pr or apply'
+    required: true
+    default: 'apply'
+runs:
+  using: "composite"
+  steps:
+    - name: Set GitHub Path
+      run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+    - run: echo $pwd
+      shell: bash
+    - name: Run Makefile
+      run: make -f ${{ github.action_path }}/Makefile.mk echo
+      shell: bash
+

@@ -80,7 +80,7 @@ HELMFILE_TEMPLATE_FLAGS ?=
 
 .PHONY: echo
 echo:
-	echo $pwd
+	pwd
 # this option configure use of selector to regenerate only namespaces with changes
 # by default, regenerate all. To regenerate only namespace try
 # HELMFILE_USE_SELECTORS = true

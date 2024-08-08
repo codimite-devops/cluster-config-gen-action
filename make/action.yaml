@@ -5,6 +5,28 @@ inputs:
     description: 'target to apply, pr or apply'
     required: true
     default: 'apply'
+  name:
+    required: true
+    description: 'Name of the repository'
+  github-token:
+    required: true
+    description: 'Github Token'
+  copy-source:
+    default: no-copy-source
+    description: ''
+  gitops-scheduler:
+    default:  no-gitops-scheduler
+    description: ''
+  repository-resolve:
+    default:  no-repository-resolve
+    description: ''
+  gitops-webhook-update:
+    default: no-gitops-webhook-updateb
+    description: ''
+  helmfile_use_selectors:
+    default: "true"
+    description: ''
+
 runs:
   using: "composite"
   steps:
@@ -14,6 +36,8 @@ runs:
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
     - name: Run Makefile
-      run: make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
+      run: COPY_SOURCE=${{ inputs.copy-source }} GENERATE_SCHEDULER=${{inputs.gitops-scheduler }} REPOSITORY_RESOLVE=${{ inputs.repository-resolve }} GITOPS_WEBHOOK_UPDATE=${{ inputs.gitops-webhook-update }} HELMFILE_USE_SELECTORS=${{ inputs.helmfile_use_selectors }} make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
 

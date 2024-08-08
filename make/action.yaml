@@ -16,6 +16,6 @@ runs:
     - run: pwd
       shell: bash
     - name: Run Makefile
-      run: make -f ${{ github.action_path }}/Makefile.mk echo
+      run: make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
       shell: bash
 

@@ -13,8 +13,6 @@ runs:
       shell: bash
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
-    - run: pwd
-      shell: bash
     - name: Run Makefile
       run: make -f ${{ github.action_path }}/Makefile.mk ${{ inputs.target }} 
       shell: bash

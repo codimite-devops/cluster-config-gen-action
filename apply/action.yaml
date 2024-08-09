@@ -1,0 +1,53 @@
+name: 'Apply'
+description: 'Action to run Apply pipeline'
+inputs:
+  target:
+    description: 'target to apply, pr or apply'
+    required: true
+    default: 'apply'
+  repo:
+    required: true
+    description: 'Name of the repository'
+  github_token:
+    required: true
+    description: 'Github Token'
+  working_directory:
+    required: true
+    description: Where to run the action
+    default: '.'
+  workload_identity_provider:
+    description: 'Workload Identity Provider to access artifactory'
+  service_account:
+    description: 'Workload Identity SA to access artifactory'
+
+runs:
+  using: "composite"
+  steps: 
+  - name: install
+    uses: codimite-devops/cluster-config-gen-action/install@main
+  - name: export-env
+    uses: codimite-devops/cluster-config-gen-action/export-pr-env@main
+    with:
+      target: "apply"
+  - run: |
+      git config --global --add safe.directory '*'
+    shell: bash
+  - id: "auth"
+    name: "Authenticate to Google Cloud"
+    uses: "google-github-actions/auth@v2"
+    with:
+      token_format: "access_token"
+      workload_identity_provider: ${{ inputs.workload_identity_provider }}
+      service_account: ${{ inputs.service_account }}
+  - uses: "docker/login-action@v3"
+    with:
+      registry: "us-central1-docker.pkg.dev" # or
+      username: "oauth2accesstoken"
+      password: "${{ steps.auth.outputs.access_token }}"
+  - name: make-apply
+    uses: codimite-devops/cluster-config-gen-action/make@main
+    with:
+      target: apply
+      repo: ${{ github.event.repository.name }}
+      github_token: ${{ inputs.github_token }}
+      working_directory: ${{ inputs.working_directory }}

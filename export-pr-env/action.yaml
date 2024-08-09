@@ -1,5 +1,10 @@
 name: 'Export PR Environment'
 description: 'Export PR Environment Variables'
+inputs:
+  target:
+    description: 'target to apply, pr or apply'
+    required: true
+    default: 'pr'
 
 runs:
   using: "composite"
@@ -7,18 +12,20 @@ runs:
   - name: export env
     shell: bash
     run: |
-      echo "PULL_BASE_REF=$PULL_BASE_REF" >> $GITHUB_ENV
-      echo "PULL_BASE_SHA=$PULL_BASE_SHA" >> $GITHUB_ENV
-      echo "PULL_NUMBER=$PULL_NUMBER" >> $GITHUB_ENV
-      echo "PULL_PULL_REF=$PULL_PULL_REF" >> $GITHUB_ENV
-      echo "PULL_PULL_SHA=$PULL_PULL_SHA" >> $GITHUB_ENV
-      echo "PULL_REFS=$PULL_REFS" >> $GITHUB_ENV
-      echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
-      echo "JOB_SPEC=$JOB_SPEC" >> $GITHUB_ENV
-      echo "JOB_TYPE=$JOB_TYPE" >> $GITHUB_ENV
-      echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-      echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
-      echo "REPO_URL=$REPO_URL" >> $GITHUB_ENV
+      if [ "${{ inputs.target }}" = "pr" ]; then
+        echo "PULL_BASE_REF=$PULL_BASE_REF" >> $GITHUB_ENV
+        echo "PULL_BASE_SHA=$PULL_BASE_SHA" >> $GITHUB_ENV
+        echo "PULL_NUMBER=$PULL_NUMBER" >> $GITHUB_ENV
+        echo "PULL_PULL_REF=$PULL_PULL_REF" >> $GITHUB_ENV
+        echo "PULL_PULL_SHA=$PULL_PULL_SHA" >> $GITHUB_ENV
+        echo "PULL_REFS=$PULL_REFS" >> $GITHUB_ENV
+        echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
+        echo "JOB_SPEC=$JOB_SPEC" >> $GITHUB_ENV
+        echo "JOB_TYPE=$JOB_TYPE" >> $GITHUB_ENV
+        echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+        echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+        echo "REPO_URL=$REPO_URL" >> $GITHUB_ENV
+      fi
       echo "JX_KUBERNETES=$JX_KUBERNETES" >> $GITHUB_ENV
       echo "SOURCE_DIR=$SOURCE_DIR" >> $GITHUB_ENV
       echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_ENV

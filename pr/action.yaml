@@ -8,10 +8,10 @@ inputs:
   repo:
     required: true
     description: 'Name of the repository'
-  github-token:
+  github_token:
     required: true
     description: 'Github Token'
-  working-directory:
+  working_directory:
     required: true
     description: Where to run the action
     default: '.'
@@ -25,11 +25,13 @@ runs:
   steps: 
   - name: install
     uses: codimite-devops/cluster-config-gen-action/install@main
+  - name: export-env
+    uses: codimite-devops/cluster-config-gen-action/export-pr-env@main
   - run: |
       git config --global --add safe.directory '*'
     shell: bash
   - name: git-branch
-    working-directory: ${{ inputs.working-directory }}
+    working-directory: ${{ inputs.working_directory }}
     shell: bash
     run: |
       export SUBDIR="$PWD"
@@ -39,7 +41,7 @@ runs:
       git reset --hard $PULL_PULL_SHA
       echo "checked out revision: $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
   - name: git-merge
-    working-directory: ${{ inputs.working-directory }}
+    working-directory: ${{ inputs.working_directory }}
     shell: bash
     run: |
       counter=0
@@ -71,5 +73,5 @@ runs:
     with:
       target: pr
       repo: ${{ github.event.repository.name }}
-      github-token: ${{ inputs.githuh-token }}
-      working-directory: "${{ github.workspace }}/source"
+      github_token: ${{ inputs.github_token }}
+      working-directory: ${{ inputs.working_directory }}

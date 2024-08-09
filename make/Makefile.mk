@@ -146,7 +146,7 @@ fetch: init $(COPY_SOURCE) $(REPOSITORY_RESOLVE)
 #	-VAULT_ADDR=$(VAULT_ADDR) VAULT_NAMESPACE=$(VAULT_NAMESPACE) jx secret populate --source filesystem --secret-namespace $(VAULT_NAMESPACE)
 
 # lets make sure all the namespaces exist for environments of the replicated secrets
-	# jx gitops namespace --dir-mode --dir $(OUTPUT_DIR)/namespaces
+	jx gitops namespace --dir-mode --dir $(OUTPUT_DIR)/namespaces
 
 .PHONY: build
 # uncomment this line to enable kustomize

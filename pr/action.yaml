@@ -52,6 +52,7 @@ runs:
       service_account: ${{ inputs.service_account }}
       cluster_project_id: ${{ inputs.cluster_project_id }}
       cluster_location: ${{ inputs.cluster_location }}
+      cluster_name: ${{ inputs.cluster_name }}
   - name: make-pr
     uses: codimite-devops/cluster-config-gen-action/make@main
     if: github.event_name == 'pull_request'

@@ -74,4 +74,4 @@ runs:
       target: pr
       repo: ${{ github.event.repository.name }}
       github_token: ${{ inputs.github_token }}
-      working-directory: ${{ inputs.working_directory }}
+      working_directory: ${{ inputs.working_directory }}

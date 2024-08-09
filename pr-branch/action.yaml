@@ -1,5 +1,9 @@
 name: 'PR Branch'
 description: 'PR BRANCH'
+inputs:
+  working_directory:
+    description: 'working dir'
+    required: true
 
 runs:
   using: "composite"

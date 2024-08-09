@@ -43,6 +43,8 @@ runs:
       git config --global --add safe.directory '*'
     shell: bash
   - uses: codimite-devops/cluster-config-gen-action/pr-branch@main
+    with:
+      working_directory: ${{ inputs.working_directory }}
   - name: auth
     uses: codimite-devops/cluster-config-gen-action/auth@main
     with:

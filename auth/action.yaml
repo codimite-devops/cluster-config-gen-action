@@ -26,7 +26,7 @@ runs:
       workload_identity_provider: ${{ inputs.workload_identity_provider }}
       service_account: ${{ inputs.service_account }}
   - id: "get-credentials"
-    if: inputs.cluster_name != "" && inputs.cluster_project_location != "" && inputs.cluster_project_id != ""
+    if: ${{ inputs.cluster_name != '' && inputs.cluster_project_location != '' && inputs.cluster_project_id != ''}
     uses: "google-github-actions/get-gke-credentials@v2"
     with:
       project_id: ${{ inputs.cluster_project_id }}

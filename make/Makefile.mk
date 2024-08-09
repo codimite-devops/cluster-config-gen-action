@@ -306,7 +306,7 @@ kubectl-apply:
 	if [ -d $(OUTPUT_DIR)/customresourcedefinitions ]; then \
 	  kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=customresourcedefinitions -l=gitops.jenkins-x.io/repository=$(REPO_NAME) -R -f $(OUTPUT_DIR)/customresourcedefinitions; \
 	fi
-	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=cluster -l=gitops.jenkins-x.io/repository=$(REPO_NAME)						-R -f $(OUTPUT_DIR)/cluster
+	# kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=cluster -l=gitops.jenkins-x.io/repository=$(REPO_NAME)						-R -f $(OUTPUT_DIR)/cluster
 	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=namespaces -l=gitops.jenkins-x.io/repository=$(REPO_NAME)					-R -f $(OUTPUT_DIR)/namespaces
 
 .PHONY: kapp-apply

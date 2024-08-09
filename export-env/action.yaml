@@ -1,5 +1,5 @@
-name: 'Export PR Environment'
-description: 'Export PR Environment Variables'
+name: 'Export Environment'
+description: 'Export Environment Variables'
 inputs:
   target:
     description: 'target to apply, pr or apply'

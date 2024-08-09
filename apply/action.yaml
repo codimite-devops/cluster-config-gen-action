@@ -26,7 +26,7 @@ runs:
   - name: install
     uses: codimite-devops/cluster-config-gen-action/install@main
   - name: export-env
-    uses: codimite-devops/cluster-config-gen-action/export-pr-env@main
+    uses: codimite-devops/cluster-config-gen-action/export-env@main
     with:
       target: "apply"
   - run: |

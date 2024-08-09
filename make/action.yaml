@@ -5,9 +5,12 @@ inputs:
     description: 'target to apply, pr or apply'
     required: true
     default: 'apply'
-  repo:
+  repo_name:
     required: true
     description: 'Name of the repository'
+  kubectl_apply:
+    description: 'type of the repository'
+    default: no-kubectl-apply
   github_token:
     required: true
     description: 'Github Token'
@@ -47,10 +50,11 @@ runs:
       env:
         MAKEFILES: '${{ github.action_path }}/Makefile.mk'
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        REPO: ${{ inputs.repo }}
+        REPO_NAME: ${{ inputs.repo_name }}
         COPY_SOURCE: ${{ inputs.copy_source }}
         GENERATE_SCHEDULER: ${{inputs.gitops_scheduler }}
         REPOSITORY_RESOLVE: ${{ inputs.repository_resolve }}
         GITOPS_WEBHOOK_UPDATE: ${{ inputs.gitops_webhook_update }}
         HELMFILE_USE_SELECTORS: ${{ inputs.helmfile_use_selectors }}
+        KUBEAPPLY: ${{ inputs.kubectl_apply }}
 

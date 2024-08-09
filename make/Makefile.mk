@@ -170,9 +170,12 @@ post-build: $(GENERATE_SCHEDULER)
 # lets add the kubectl-apply prune annotations
 #
 # NOTE be very careful about these 3 labels as getting them wrong can remove stuff in you cluster!
-	jx gitops label --dir $(OUTPUT_DIR)/cluster                   gitops.jenkins-x.io/pipeline=$(REPO)-cluster
-	jx gitops label --dir $(OUTPUT_DIR)/customresourcedefinitions gitops.jenkins-x.io/pipeline=$(REPO)-crd
-	jx gitops label --dir $(OUTPUT_DIR)/namespaces                gitops.jenkins-x.io/pipeline=$(REPO)-ns
+	jx gitops label --dir $(OUTPUT_DIR)/cluster                   gitops.jenkins-x.io/pipeline=cluster
+	jx gitops label --dir $(OUTPUT_DIR)/cluster                   gitops.jenkins-x.io/repository=$(REPO_NAME)
+	jx gitops label --dir $(OUTPUT_DIR)/customresourcedefinitions gitops.jenkins-x.io/pipeline=customresourcedefinitions
+	jx gitops label --dir $(OUTPUT_DIR)/customresourcedefinitions gitops.jenkins-x.io/repository=$(REPO_NAME)
+	jx gitops label --dir $(OUTPUT_DIR)/namespaces                gitops.jenkins-x.io/pipeline=namespaces
+	jx gitops label --dir $(OUTPUT_DIR)/namespaces                gitops.jenkins-x.io/repository=$(REPO_NAME)
 
 # lets add kapp friendly change group identifiers to nginx-ingress and pusher-wave so we can write rules against them
 	jx gitops annotate --dir $(OUTPUT_DIR) --selector app=pusher-wave kapp.k14s.io/change-group=apps.jenkins-x.io/pusher-wave
@@ -291,9 +294,53 @@ gitops-postprocess:
 # lets apply any infrastructure specific labels or annotations to enable IAM roles on ServiceAccounts etc
 	# jx gitops postprocess
 
+.PHONY: no-kubectl-apply
+no-kubectl-apply:
+	@echo "disabled infavor of ArgoCD"
+
 .PHONY: kubectl-apply
 kubectl-apply:
-	@echo "using ArgoCD to apply resources"
+	@echo "using kubectl to apply resources"
+
+# NOTE be very careful about these 2 labels as getting them wrong can remove stuff in you cluster!
+	if [ -d $(OUTPUT_DIR)/customresourcedefinitions ]; then \
+	  kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=customresourcedefinitions -l=gitops.jenkins-x.io/repository=$(REPO_NAME) -R -f $(OUTPUT_DIR)/customresourcedefinitions; \
+	fi
+	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=cluster -l=gitops.jenkins-x.io/repository=$(REPO_NAME)						-R -f $(OUTPUT_DIR)/cluster
+	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=namespaces -l=gitops.jenkins-x.io/repository=$(REPO_NAME)					-R -f $(OUTPUT_DIR)/namespaces
+
+.PHONY: kapp-apply
+kapp-apply:
+	@echo "using kapp to apply resources"
+
+	kapp deploy -a jx -f $(OUTPUT_DIR) -y
+
+# kpt live apply is very strict on the syntax of the manifest yaml files. Before switching to kpt-apply it might be good
+# idea to use a yaml linter on the files in config-root.
+.PHONY: kpt-apply
+kpt-apply: kpt-apply-customresourcedefinitions kpt-apply-cluster kpt-apply-namespaces
+
+.PHONY: kpt-apply-customresourcedefinitions
+kpt-apply-customresourcedefinitions: $(OUTPUT_DIR)/customresourcedefinitions/Kptfile
+	@echo "using kpt to apply custom resource definitions"
+
+	[ ! -d $(OUTPUT_DIR)/customresourcedefinitions ] || ./versionStream/src/kpt-live-apply-wrapper.sh $(OUTPUT_DIR)/customresourcedefinitions crd 'Custom resource definitions applied' $(NEW_CLUSTER) $(KPT_LIVE_APPLY_FLAGS)
+
+.PHONY: kpt-apply-cluster
+kpt-apply-cluster: $(OUTPUT_DIR)/cluster/Kptfile
+	@echo "using kpt to apply cluster resources"
+
+	./versionStream/src/kpt-live-apply-wrapper.sh $(OUTPUT_DIR)/cluster cluster 'Cluster wide resources applied'  $(NEW_CLUSTER) $(KPT_LIVE_APPLY_FLAGS)
+
+.PHONY: kpt-apply-namespaces
+kpt-apply-namespaces: $(OUTPUT_DIR)/namespaces/Kptfile
+	@echo "using kpt to apply namespaced resources"
+
+	./versionStream/src/kpt-live-apply-wrapper.sh $(OUTPUT_DIR)/namespaces ns 'Namespaced resources applied' $(NEW_CLUSTER) $(KPT_LIVE_APPLY_FLAGS)
+
+.PHONY: kpt-apply-dry-run
+kpt-apply-dry-run:
+	@echo "verifying changes with kpt"
 
 
 %/Kptfile:

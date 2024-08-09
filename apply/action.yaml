@@ -5,12 +5,15 @@ inputs:
     description: 'target to apply, pr or apply'
     required: true
     default: 'apply'
-  repo:
+  repo_name:
     required: true
     description: 'Name of the repository'
   github_token:
     required: true
     description: 'Github Token'
+  kubectl_apply:
+    description: 'type of the repository'
+    default: no-kubectl-apply
   working_directory:
     required: true
     description: Where to run the action
@@ -48,6 +51,7 @@ runs:
     uses: codimite-devops/cluster-config-gen-action/make@main
     with:
       target: apply
-      repo: ${{ github.event.repository.name }}
+      repo_name: ${{ github.event.repository.name }}
       github_token: ${{ inputs.github_token }}
       working_directory: ${{ inputs.working_directory }}
+      kubectl_apply: ${{ inputs.kubectl_apply }}

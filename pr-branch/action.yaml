@@ -1,0 +1,31 @@
+name: 'PR Branch'
+description: 'PR BRANCH'
+
+runs:
+  using: "composite"
+  steps:
+  - name: git-branch
+    working-directory: ${{ inputs.working_directory }}
+    shell: bash
+    run: |
+      export SUBDIR="$PWD"
+      echo "git working on: $REPO_URL version $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
+      git fetch origin $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
+      git checkout $(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
+      git reset --hard $PULL_PULL_SHA
+      echo "checked out revision: $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
+  - name: git-merge
+    working-directory: ${{ inputs.working_directory }}
+    shell: bash
+    run: |
+      counter=0
+      until [ "$counter" -eq 3 ]; do
+        # lets avoid git rebase/merge conflicts on promotions
+        jx gitops git merge --rebase --merge-arg "-Xtheirs" && exit 0
+        counter=$((counter+1))
+        git rebase --abort
+        if git log -1 --pretty=%B | grep -i regenerate; then
+          git reset --hard HEAD~1
+        fi
+      done
+      exit 1

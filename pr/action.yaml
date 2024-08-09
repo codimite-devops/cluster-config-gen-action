@@ -22,6 +22,15 @@ inputs:
     description: 'Workload Identity Provider to access artifactory'
   service_account:
     description: 'Workload Identity SA to access artifactory'
+  cluster_project_id:
+    description: 'Cluster Project ID'
+    default: ""
+  cluster_project_location:
+    description: 'Cluster Location'
+    default: ""
+  cluster_name:
+    description: 'Cluster Name'
+    default: ""
 
 runs:
   using: "composite"
@@ -33,43 +42,14 @@ runs:
   - run: |
       git config --global --add safe.directory '*'
     shell: bash
-  - name: git-branch
-    working-directory: ${{ inputs.working_directory }}
-    shell: bash
-    run: |
-      export SUBDIR="$PWD"
-      echo "git working on: $REPO_URL version $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
-      git fetch origin $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
-      git checkout $(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER
-      git reset --hard $PULL_PULL_SHA
-      echo "checked out revision: $PULL_PULL_REF:$(echo $JOB_NAME | tr '[:lower:]' '[:upper:]')-$PULL_NUMBER@$PULL_PULL_SHA to dir: $SUBDIR"
-  - name: git-merge
-    working-directory: ${{ inputs.working_directory }}
-    shell: bash
-    run: |
-      counter=0
-      until [ "$counter" -eq 3 ]; do
-        # lets avoid git rebase/merge conflicts on promotions
-        jx gitops git merge --rebase --merge-arg "-Xtheirs" && exit 0
-        counter=$((counter+1))
-        git rebase --abort
-        if git log -1 --pretty=%B | grep -i regenerate; then
-          git reset --hard HEAD~1
-        fi
-      done
-      exit 1
-  - id: "auth"
-    name: "Authenticate to Google Cloud"
-    uses: "google-github-actions/auth@v2"
+  - uses: codimite-devops/cluster-config-gen-action/pr-branch@main
+  - name: auth
+    uses: codimite-devops/cluster-config-gen-action/auth@main
     with:
-      token_format: "access_token"
       workload_identity_provider: ${{ inputs.workload_identity_provider }}
       service_account: ${{ inputs.service_account }}
-  - uses: "docker/login-action@v3"
-    with:
-      registry: "us-central1-docker.pkg.dev" # or
-      username: "oauth2accesstoken"
-      password: "${{ steps.auth.outputs.access_token }}"
+      cluster_project_id: ${{ inputs.cluster_project_id }}
+      cluster_project_location: ${{ inputs.cluster_project_location }}
   - name: make-pr
     uses: codimite-devops/cluster-config-gen-action/make@main
     if: github.event_name == 'pull_request'

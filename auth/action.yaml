@@ -1,0 +1,40 @@
+name: 'Export Environment'
+description: 'Export Environment Variables'
+inputs:
+  workload_identity_provider:
+    description: 'Workload Identity Provider name'
+  service_account: 
+    description: 'Workload Identity SA'
+  cluster_project_id:
+    description: 'Cluster Project ID'
+    default: ""
+  cluster_project_location:
+    description: 'Cluster Location'
+    default: ""
+  cluster_name:
+    description: 'Cluster Name'
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+  - id: "auth"
+    name: "Authenticate to Google Cloud"
+    uses: "google-github-actions/auth@v2"
+    with:
+      token_format: "access_token"
+      workload_identity_provider: ${{ inputs.workload_identity_provider }}
+      service_account: ${{ inputs.service_account }}
+  - id: "get-credentials"
+    if: inputs.cluster_name != "" && inputs.cluster_project_location != "" && inputs.cluster_project_id != ""
+    uses: "google-github-actions/get-gke-credentials@v2"
+    with:
+      project_id: ${{ inputs.cluster_project_id }}
+      cluster_name: ${{ inputs.cluster_name }}
+      location: ${{ inputs.cluster_location }}
+      use_connect_gateway: "true"
+  - uses: "docker/login-action@v3"
+    with:
+      registry: "us-central1-docker.pkg.dev" # or
+      username: "oauth2accesstoken"
+      password: "${{ steps.auth.outputs.access_token }}"

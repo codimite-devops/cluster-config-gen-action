@@ -25,7 +25,7 @@ inputs:
   cluster_project_id:
     description: 'Cluster Project ID'
     default: ""
-  cluster_project_location:
+  cluster_location:
     description: 'Cluster Location'
     default: ""
   cluster_name:
@@ -51,7 +51,7 @@ runs:
       workload_identity_provider: ${{ inputs.workload_identity_provider }}
       service_account: ${{ inputs.service_account }}
       cluster_project_id: ${{ inputs.cluster_project_id }}
-      cluster_project_location: ${{ inputs.cluster_project_location }}
+      cluster_location: ${{ inputs.cluster_location }}
   - name: make-pr
     uses: codimite-devops/cluster-config-gen-action/make@main
     if: github.event_name == 'pull_request'

@@ -25,7 +25,7 @@ inputs:
   cluster_project_id:
     description: 'Cluster Project ID'
     default: ""
-  cluster_project_location:
+  cluster_location:
     description: 'Cluster Location'
     default: ""
   cluster_name:
@@ -46,13 +46,13 @@ runs:
   - run: |
       git config --global --add safe.directory '*'
     shell: bash
-  - name: make-apply
+  - name: auth
     uses: codimite-devops/cluster-config-gen-action/auth@main
     with:
       workload_identity_provider: ${{ inputs.workload_identity_provider }}
       service_account: ${{ inputs.service_account }}
       cluster_project_id: ${{ inputs.cluster_project_id }}
-      cluster_project_location: ${{ inputs.cluster_project_location }}
+      cluster_location: ${{ inputs.cluster_location }}
       cluster_name: ${{ inputs.cluster_name }}
   - name: make-apply
     uses: codimite-devops/cluster-config-gen-action/make@main

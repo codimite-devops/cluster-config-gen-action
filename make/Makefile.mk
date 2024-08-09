@@ -304,10 +304,10 @@ kubectl-apply:
 
 # NOTE be very careful about these 2 labels as getting them wrong can remove stuff in you cluster!
 	if [ -d $(OUTPUT_DIR)/customresourcedefinitions ]; then \
-	  kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=customresourcedefinitions -l=gitops.jenkins-x.io/repository=$(REPO_NAME) -R -f $(OUTPUT_DIR)/customresourcedefinitions; \
+	  kubectl apply $(KUBECTL_APPLY_FLAGS)  --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME) --prune -l=gitops.jenkins-x.io/pipeline=customresourcedefinitions -R -f $(OUTPUT_DIR)/customresourcedefinitions; \
 	fi
-	# kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=cluster -l=gitops.jenkins-x.io/repository=$(REPO_NAME)						-R -f $(OUTPUT_DIR)/cluster
-	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/pipeline=namespaces -l=gitops.jenkins-x.io/repository=$(REPO_NAME)					-R -f $(OUTPUT_DIR)/namespaces
+	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME) --prune -l=gitops.jenkins-x.io/pipeline=cluster						-R -f $(OUTPUT_DIR)/cluster
+	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME)	--prune -l=gitops.jenkins-x.io/pipeline=namespaces				-R -f $(OUTPUT_DIR)/namespaces
 
 .PHONY: kapp-apply
 kapp-apply:

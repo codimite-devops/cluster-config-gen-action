@@ -59,6 +59,9 @@ NEW_CLUSTER ?= false
 # You can disable force mode on kubectl apply by modifying this line:
 KUBECTL_APPLY_FLAGS ?= 
 
+# Repos with this file prune only the kinds listed in it, otherwise kubectl's defaults apply
+PRUNE_ALLOWLIST_FILE ?= prune-allowlist
+
 KPT_LIVE_APPLY_FLAGS ?= --install-resource-group --inventory-policy=adopt --reconcile-timeout=15m
 
 # When using kpt live apply on a development cluster you could set
@@ -301,13 +304,14 @@ no-kubectl-apply:
 .PHONY: kubectl-apply
 kubectl-apply:
 	@echo "using kubectl to apply resources"
+	prune-allowlist-flags.sh $(PRUNE_ALLOWLIST_FILE) > /tmp/prune-allowlist-flags
 
 # NOTE be very careful about these 2 labels as getting them wrong can remove stuff in you cluster!
 	if [ -d $(OUTPUT_DIR)/customresourcedefinitions ]; then \
 	  kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME),gitops.jenkins-x.io/pipeline=customresourcedefinitions -R -f $(OUTPUT_DIR)/customresourcedefinitions; \
 	fi
-	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME),gitops.jenkins-x.io/pipeline=cluster						-R -f $(OUTPUT_DIR)/cluster
-	kubectl apply $(KUBECTL_APPLY_FLAGS) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME),gitops.jenkins-x.io/pipeline=namespaces				-R -f $(OUTPUT_DIR)/namespaces
+	kubectl apply $(KUBECTL_APPLY_FLAGS) $$(cat /tmp/prune-allowlist-flags) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME),gitops.jenkins-x.io/pipeline=cluster						-R -f $(OUTPUT_DIR)/cluster
+	kubectl apply $(KUBECTL_APPLY_FLAGS) $$(cat /tmp/prune-allowlist-flags) --prune -l=gitops.jenkins-x.io/repository=$(REPO_NAME),gitops.jenkins-x.io/pipeline=namespaces				-R -f $(OUTPUT_DIR)/namespaces
 
 .PHONY: kapp-apply
 kapp-apply:
